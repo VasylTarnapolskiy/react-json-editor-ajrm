@@ -5,536 +5,649 @@ import err                    from './err';
 import { format }             from './locale';
 import defaultLocale          from './locale/en';
 
-
 class JSONInput extends Component {
-    constructor(props) {
+    constructor(props){
         super(props);
-        this.updateInternalProps = this.updateInternalProps.bind(this);
-        this.createMarkup = this.createMarkup.bind(this);
-        this.onClick = this.onClick.bind(this);
-        this.onBlur = this.onBlur.bind(this);
-        this.update = this.update.bind(this);
-        this.getCursorPosition = this.getCursorPosition.bind(this);
-        this.setCursorPosition = this.setCursorPosition.bind(this);
-        this.scheduledUpdate = this.scheduledUpdate.bind(this);
-        this.setUpdateTime = this.setUpdateTime.bind(this);
-        this.renderLabels = this.renderLabels.bind(this);
-        this.newSpan = this.newSpan.bind(this);
-        this.renderErrorMessage = this.renderErrorMessage.bind(this);
-        this.onScroll = this.onScroll.bind(this);
-        this.showPlaceholder = this.showPlaceholder.bind(this);
-        this.tokenize = this.tokenize.bind(this);
-        this.onKeyPress = this.onKeyPress.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onPaste = this.onPaste.bind(this);
-        this.stopEvent = this.stopEvent.bind(this);
-
-        this.refContent = null;
-        this.refLabels = null;
+        this.updateInternalProps = this.updateInternalProps .bind(this);
+        this.createMarkup        = this.createMarkup        .bind(this);
+        this.onClick             = this.onClick             .bind(this);
+        this.onBlur              = this.onBlur              .bind(this);
+        this.update              = this.update              .bind(this);
+        this.getCursorPosition   = this.getCursorPosition   .bind(this);
+        this.setCursorPosition   = this.setCursorPosition   .bind(this);
+        this.scheduledUpdate     = this.scheduledUpdate     .bind(this);
+        this.setUpdateTime       = this.setUpdateTime       .bind(this);
+        this.renderLabels        = this.renderLabels        .bind(this);
+        this.newSpan             = this.newSpan             .bind(this);
+        this.renderErrorMessage  = this.renderErrorMessage  .bind(this);
+        this.onScroll            = this.onScroll            .bind(this);
+        this.showPlaceholder     = this.showPlaceholder     .bind(this);
+        this.tokenize            = this.tokenize            .bind(this);
+        this.onKeyPress          = this.onKeyPress          .bind(this);
+        this.onKeyDown           = this.onKeyDown           .bind(this);
+        this.onPaste             = this.onPaste             .bind(this);
+        this.stopEvent           = this.stopEvent           .bind(this);
+        this.refContent     = null;
+        this.refLabels      = null;
         this.updateInternalProps();
-        this.renderCount = 1;
-        this.state = {
-            prevPlaceholder: '',
-            markupText: '',
-            plainText: '',
-            json: '',
-            jsObject: undefined,
-            lines: false,
-            error: false
+        this.renderCount         = 1;
+        this.state  = {
+            prevPlaceholder : '',
+            markupText      : '',
+            plainText       : '',
+            json            : '',
+            jsObject        : undefined,
+            lines           : false,
+            error           : false
         };
-
         if (!this.props.locale) {
             console.warn("[react-json-editor-ajrm - Deprecation Warning] You did not provide a 'locale' prop for your JSON input - This will be required in a future version. English has been set as a default.");
         }
     }
-
-    renderErrorMessage(){
-        const
-            error = this.props.error || this.state.error,
-            style = this.style;
-        if(!error) return;
-        return (
-            <div
-                name  = 'error-message-box'
-                id    = {this.props.id && this.props.id + '-error-message-box'}
-                style = {{
-                    height    : '30px',
-                    width     : '100%',
-                    position  : 'absolute',
-                    bottom    : 0,
-                    display   : 'block',
-                    fontSize  : '12px',
-                    color     : this.colors.error,
-                    lineHeight: '30px',
-                    overflow  : 'hidden',
-                    ...style.errorMessage
-                }}
-            >
-                {
-                    error.token
-                        ? error.error.replace(' at position',' at position ' + error.token.index + ', character ') + '.'
-                        : error.error
-                }
-            </div>
-        );
-    }
-
-    newSpan(key, content, color) {
-        return (
-            <span key={key} style={{ color }}>
-            {content}
-        </span>
-        );
-    }
-
-    updateInternalProps() {
+    updateInternalProps(){
         let colors = {}, style = {}, theme = themes.dark_vscode_tribute;
-        if ('theme' in this.props) {
-            if (typeof this.props.theme === 'string' && this.props.theme in themes) {
-                theme = themes[this.props.theme];
-            }
-        }
+        if('theme' in this.props)
+            if(typeof this.props.theme === 'string')
+                if(this.props.theme in themes)
+                    theme  = themes[this.props.theme];
         colors = theme;
-        if ('colors' in this.props) {
+        if('colors' in this.props)
             colors = {
-                default: this.props.colors.default || colors.default,
-                string: this.props.colors.string || colors.string,
-                number: this.props.colors.number || colors.number,
-                colon: this.props.colors.colon || colors.colon,
-                keys: this.props.colors.keys || colors.keys,
-                keys_whiteSpace: this.props.colors.keys_whiteSpace || colors.keys_whiteSpace,
-                primitive: this.props.colors.primitive || colors.primitive,
-                error: this.props.colors.error || colors.error,
-                background: this.props.colors.background || colors.background,
-                background_warning: this.props.colors.background_warning || colors.background_warning
+                default            : 'default'            in this.props.colors ? this.props.colors.default            : colors.default,
+                string             : 'string'             in this.props.colors ? this.props.colors.string             : colors.string,
+                number             : 'number'             in this.props.colors ? this.props.colors.number             : colors.number,
+                colon              : 'colon'              in this.props.colors ? this.props.colors.colon              : colors.colon,
+                keys               : 'keys'               in this.props.colors ? this.props.colors.keys               : colors.keys,
+                keys_whiteSpace    : 'keys_whiteSpace'    in this.props.colors ? this.props.colors.keys_whiteSpace    : colors.keys_whiteSpace,
+                primitive          : 'primitive'          in this.props.colors ? this.props.colors.primitive          : colors.primitive,
+                error              : 'error'              in this.props.colors ? this.props.colors.error              : colors.error,
+                background         : 'background'         in this.props.colors ? this.props.colors.background         : colors.background,
+                background_warning : 'background_warning' in this.props.colors ? this.props.colors.background_warning : colors.background_warning
             };
-        }
         this.colors = colors;
-        if ('style' in this.props) {
+        if('style' in this.props)
             style = {
-                outerBox: this.props.style.outerBox || {},
-                container: this.props.style.container || {},
-                warningBox: this.props.style.warningBox || {},
-                errorMessage: this.props.style.errorMessage || {},
-                body: this.props.style.body || {},
-                labelColumn: this.props.style.labelColumn || {},
-                labels: this.props.style.labels || {},
-                contentBox: this.props.style.contentBox || {}
+                outerBox     : 'outerBox'     in this.props.style ?  this.props.style.outerBox     : {},
+                container    : 'container'    in this.props.style ?  this.props.style.container    : {},
+                warningBox   : 'warningBox'   in this.props.style ?  this.props.style.warningBox   : {},
+                errorMessage : 'errorMessage' in this.props.style ?  this.props.style.errorMessage : {},
+                body         : 'body'         in this.props.style ?  this.props.style.body         : {},
+                labelColumn  : 'labelColumn'  in this.props.style ?  this.props.style.labelColumn  : {},
+                labels       : 'labels'       in this.props.style ?  this.props.style.labels       : {},
+                contentBox   : 'contentBox'   in this.props.style ?  this.props.style.contentBox   : {}
             };
-        } else {
+        else
             style = {
-                outerBox: {},
-                container: {},
-                warningBox: {},
-                errorMessage: {},
-                body: {},
-                labelColumn: {},
-                labels: {},
-                contentBox: {}
+                outerBox     : {},
+                container    : {},
+                warningBox   : {},
+                errorMessage : {},
+                body         : {},
+                labelColumn  : {},
+                labels       : {},
+                contentBox   : {}
             };
-        }
         this.style = style;
-        this.confirmGood = this.props.confirmGood || true;
-        this.totalHeight = this.props.height || '610px';
-        this.totalWidth = this.props.width || '479px';
-        if (!('onKeyPressUpdate' in this.props) || this.props.onKeyPressUpdate) {
-            if (!this.timer) this.timer = setInterval(this.scheduledUpdate, 100);
-        } else {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = false;
-            }
+        this.confirmGood = 'confirmGood' in this.props ? this.props.confirmGood : true;
+        const
+            totalHeight  = (this.props.height||'610px'),
+            totalWidth   = (this.props.width||'479px');
+        this.totalHeight = totalHeight;
+        this.totalWidth  = totalWidth;
+        if((!('onKeyPressUpdate' in this.props)) || this.props.onKeyPressUpdate){
+            if(!this.timer) this.timer = setInterval(this.scheduledUpdate,100);
         }
-        this.updateTime = false;
-        this.waitAfterKeyPress = this.props.waitAfterKeyPress || 1000;
-        this.resetConfiguration = this.props.reset || false;
+        else
+        if(this.timer){
+            clearInterval(this.timer);
+            this.timer = false;
+        }
+        this.updateTime         = false;
+        this.waitAfterKeyPress  = 'waitAfterKeyPress' in this.props? this.props.waitAfterKeyPress : 1000;
+        this.resetConfiguration = 'reset' in this.props ? this.props.reset : false;
     }
-
-    render() {
-        const {
-            id,
-            error: propError
-        } = this.props;
-        const {
-            markupText,
-            error: stateError
-        } = this.state;
-        const error = propError || stateError;
-        const {
-            colors,
-            style,
-            confirmGood,
-            totalHeight,
-            totalWidth
-        } = this;
-        const hasError = !!propError || (error ? 'token' in error : false);
-
+    render(){
+        const
+            id           = this.props.id,
+            markupText   = this.state.markupText,
+            error        = this.props.error || this.state.error,
+            colors       = this.colors,
+            style        = this.style,
+            confirmGood  = this.confirmGood,
+            totalHeight  = this.totalHeight,
+            totalWidth   = this.totalWidth,
+            hasError     = !!this.props.error || (error ? 'token' in error : false);
         this.renderCount++;
         return (
             <div
-                name='outer-box'
-                id={id && id + '-outer-box'}
-                style={{
-                    display: 'block',
-                    overflow: 'none',
-                    height: totalHeight,
-                    width: totalWidth,
-                    margin: 0,
-                    boxSizing: 'border-box',
-                    position: 'relative',
+                name  = 'outer-box'
+                id    = {id && id + '-outer-box'}
+                style = {{
+                    display    : 'block',
+                    overflow   : 'none',
+                    height     : totalHeight,
+                    width      : totalWidth,
+                    margin     : 0,
+                    boxSizing  : 'border-box',
+                    position   : 'relative',
                     ...style.outerBox
                 }}
             >
-                {confirmGood && (
-                    <div
-                        style={{
-                            opacity: 0,
-                            height: '30px',
-                            width: '30px',
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            transform: 'translate(-25%,25%)',
-                            pointerEvents: 'none',
-                            transitionDuration: '0.2s',
-                            transitionTimingFunction: 'cubic-bezier(0, 1, 0.5, 1)'
-                        }}
-                    >
-                        <svg height='30px' width='30px' viewBox='0 0 100 100'>
-                            <path
-                                fillRule='evenodd'
-                                clipRule='evenodd'
-                                fill='green'
-                                opacity='0.85'
-                                d='M39.363,79L16,55.49l11.347-11.419L39.694,56.49L72.983,23L84,34.085L39.363,79z'
-                            />
-                        </svg>
-                    </div>
-                )}
+                {
+                    confirmGood ?
+                        <div
+                            style = {{
+                                opacity                  : 0,
+                                height                   : '30px',
+                                width                    : '30px',
+                                position                 : 'absolute',
+                                top                      : 0,
+                                right                    : 0,
+                                transform                : 'translate(-25%,25%)',
+                                pointerEvents            : 'none',
+                                transitionDuration       : '0.2s',
+                                transitionTimingFunction : 'cubic-bezier(0, 1, 0.5, 1)'
+                            }}
+                        >
+                            <svg
+                                height  = '30px'
+                                width   = '30px'
+                                viewBox = '0 0 100 100'
+                            >
+                                <path
+                                    fillRule = 'evenodd'
+                                    clipRule = 'evenodd'
+                                    fill     = 'green'
+                                    opacity  = '0.85'
+                                    d='M39.363,79L16,55.49l11.347-11.419L39.694,56.49L72.983,23L84,34.085L39.363,79z'
+                                />
+                            </svg>
+                        </div>
+                        : void(0)
+                }
                 <div
-                    name='container'
-                    id={id && id + '-container'}
-                    style={{
-                        display: 'block',
-                        height: totalHeight,
-                        width: totalWidth,
-                        margin: 0,
-                        boxSizing: 'border-box',
-                        overflow: 'hidden',
-                        fontFamily: 'Roboto, sans-serif',
+                    name  = 'container'
+                    id    = {id && id + '-container'}
+                    style = {{
+                        display    : 'block',
+                        height     : totalHeight,
+                        width      : totalWidth,
+                        margin     : 0,
+                        boxSizing  : 'border-box',
+                        overflow   : 'hidden',
+                        fontFamily : 'Roboto, sans-serif',
                         ...style.container
                     }}
-                    onClick={this.onClick}
+                    onClick = { this.onClick }
                 >
                     <div
-                        name='warning-box'
-                        id={id && id + '-warning-box'}
-                        style={{
-                            display: 'none',
-                            overflow: 'hidden',
-                            height: '0px',
-                            width: '100%',
-                            margin: 0,
-                            backgroundColor: colors.background_warning,
-                            transitionDuration: '0.2s',
-                            transitionTimingFunction: 'cubic-bezier(0, 1, 0.5, 1)',
+                        name  = 'warning-box'
+                        id    = {id && id + '-warning-box'}
+                        style = {{
+                            display                  : 'none',
+                            overflow                 : 'hidden',
+                            height                   : '0px',
+                            width                    : '100%',
+                            margin                   : 0,
+                            backgroundColor          : colors.background_warning,
+                            transitionDuration       : '0.2s',
+                            transitionTimingFunction : 'cubic-bezier(0, 1, 0.5, 1)',
                             ...style.warningBox
                         }}
-                        onClick={this.onClick}
+                        onClick = { this.onClick }
                     >
                         <span
-                            style={{
-                                display: 'inline-block',
-                                height: '60px',
-                                width: '60px',
-                                margin: 0,
-                                boxSizing: 'border-box',
-                                overflow: 'hidden',
-                                verticalAlign: 'top',
-                                pointerEvents: 'none'
+                            style = {{
+                                display       : 'inline-block',
+                                height        : '60px',
+                                width         : '60px',
+                                margin        : 0,
+                                boxSizing     : 'border-box',
+                                overflow      : 'hidden',
+                                verticalAlign : 'top',
+                                pointerEvents : 'none'
                             }}
-                            onClick={this.onClick}
+                            onClick = { this.onClick }
                         >
                             <div
-                                style={{
-                                    position: 'relative',
-                                    top: 0,
-                                    left: 0,
-                                    height: '60px',
-                                    width: '60px',
-                                    margin: 0,
-                                    pointerEvents: 'none'
+                                style = {{
+                                    position      : 'relative',
+                                    top           : 0,
+                                    left          : 0,
+                                    height        : '60px',
+                                    width         : '60px',
+                                    margin        : 0,
+                                    pointerEvents : 'none'
                                 }}
-                                onClick={this.onClick}
+                                onClick = { this.onClick }
                             >
                                 <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        pointerEvents: 'none'
+                                    style = {{
+                                        position      : 'absolute',
+                                        top           : '50%',
+                                        left          : '50%',
+                                        transform     : 'translate(-50%, -50%)',
+                                        pointerEvents : 'none'
                                     }}
-                                    onClick={this.onClick}
+                                    onClick = { this.onClick }
                                 >
-                                    <svg height='25px' width='25px' viewBox='0 0 100 100'>
+                                    <svg
+                                        height  = '25px'
+                                        width   = '25px'
+                                        viewBox = '0 0 100 100'
+                                    >
                                         <path
-                                            fillRule='evenodd'
-                                            clipRule='evenodd'
-                                            fill='red'
-                                            d='M73.9,5.75c0.467-0.467,1.067-0.7,1.8-0.7c0.7,0,1.283,0.233,1.75,0.7l16.8,16.8  c0.467,0.5,0.7,1.084,0.7,1.75c0,0.733-0.233,1.334-0.7,1.801L70.35,50l23.9,23.95c0.5,0.467,0.75,1.066,0.75,1.8  c0,0.667-0.25,1.25-0.75,1.75l-16.8,16.75c-0.534,0.467-1.117,0.7-1.75,0.7s-1.233-0.233-1.8-0.7L50,70.351L26.1,94.25  c-0.567,0.467-1.167,0.7-1.8,0.7c-0.7,0-1.284-0.233-1.75-0.7L5.75,77.5C5.25,77.033,5,76.45,5,75.75c0-0.734,0.25-1.334,0.75-1.8  L29.65,50L5.75,26.05C5.25,25.55,5,24.967,5,24.2c0-0.667,0.25-1.25,0.75-1.75L22.5,5.75C22.967,5.25,23.567,5,24.3,5  c0.667,0,1.25,0.25,1.75,0.75L50,29.65L73.9,5.75z'
+                                            fillRule ='evenodd'
+                                            clipRule ='evenodd'
+                                            fill     = 'red'
+                                            d        = 'M73.9,5.75c0.467-0.467,1.067-0.7,1.8-0.7c0.7,0,1.283,0.233,1.75,0.7l16.8,16.8  c0.467,0.5,0.7,1.084,0.7,1.75c0,0.733-0.233,1.334-0.7,1.801L70.35,50l23.9,23.95c0.5,0.467,0.75,1.066,0.75,1.8  c0,0.667-0.25,1.25-0.75,1.75l-16.8,16.75c-0.534,0.467-1.117,0.7-1.75,0.7s-1.233-0.233-1.8-0.7L50,70.351L26.1,94.25  c-0.567,0.467-1.167,0.7-1.8,0.7c-0.667,0-1.283-0.233-1.85-0.7L5.75,77.5C5.25,77,5,76.417,5,75.75c0-0.733,0.25-1.333,0.75-1.8  L29.65,50L5.75,26.101C5.25,25.667,5,25.066,5,24.3c0-0.666,0.25-1.25,0.75-1.75l16.8-16.8c0.467-0.467,1.05-0.7,1.75-0.7  c0.733,0,1.333,0.233,1.8,0.7L50,29.65L73.9,5.75z'
                                         />
                                     </svg>
                                 </div>
                             </div>
                         </span>
-                        <div
-                            name='error-message'
-                            id={id && id + '-error-message'}
-                            style={{
-                                display: 'inline-block',
-                                height: '60px',
-                                width: 'calc(100% - 60px)',
-                                margin: 0,
-                                boxSizing: 'border-box',
-                                verticalAlign: 'top',
-                                overflow: 'hidden',
-                                fontSize: '12px',
-                                color: colors.error,
-                                padding: '4px',
-                                fontFamily: 'monospace',
-                                pointerEvents: 'none',
-                                ...style.errorMessage
+                        <span
+                            style = {{
+                                display       : 'inline-block',
+                                height        : '60px',
+                                width         : 'calc(100% - 60px)',
+                                margin        : 0,
+                                overflow      : 'hidden',
+                                verticalAlign : 'top',
+                                position      : 'absolute',
+                                pointerEvents : 'none'
                             }}
-                            onClick={this.onClick}
+                            onClick = { this.onClick }
                         >
-                            {hasError && error ? (error.reason || error.message) : ''}
-                        </div>
+                            { this.renderErrorMessage() }
+                        </span>
                     </div>
                     <div
-                        name='body'
-                        id={id && id + '-body'}
-                        style={{
-                            display: 'block',
-                            height: 'calc(100% - 0px)',
-                            width: '100%',
-                            margin: 0,
-                            boxSizing: 'border-box',
-                            backgroundColor: colors.background,
-                            overflow: 'hidden',
+                        name  = 'body'
+                        id    = {id && id + '-body'}
+                        style = {{
+                            display                  : 'flex',
+                            overflow                 : 'none',
+                            height                   : hasError ? 'calc(100% - 60px)' : '100%',
+                            width                    : '',
+                            margin                   : 0,
+                            resize                   : 'none',
+                            fontFamily               : 'Roboto Mono, Monaco, monospace',
+                            fontSize                 : '11px',
+                            backgroundColor          : colors.background,
+                            transitionDuration       : '0.2s',
+                            transitionTimingFunction : 'cubic-bezier(0, 1, 0.5, 1)',
                             ...style.body
                         }}
-                        onScroll={this.onScroll}
+                        onClick = { this.onClick }
                     >
-                        <div
-                            name='label-column'
-                            id={id && id + '-label-column'}
-                            ref={(ref) => { this.refLabels = ref; }}
-                            style={{
-                                display: 'inline-block',
-                                height: '100%',
-                                width: '50px',
-                                minWidth: '50px',
-                                maxWidth: '50px',
-                                margin: 0,
-                                padding: '4px',
-                                boxSizing: 'border-box',
-                                overflow: 'hidden',
-                                textAlign: 'center',
+                        <span
+                            name  = 'labels'
+                            id    = {id && id + '-labels'}
+                            ref   = {ref => this.refLabels = ref}
+                            style = {{
+                                display       : 'inline-block',
+                                boxSizing     : 'border-box',
+                                verticalAlign : 'top',
+                                height        : '100%',
+                                width         : '44px',
+                                margin        : 0,
+                                padding       : '5px 0px 5px 10px',
+                                overflow      : 'hidden',
+                                color         : '#D4D4D4',
                                 ...style.labelColumn
                             }}
-                        />
-                        <div
-                            name='content-box'
-                            id={id && id + '-content-box'}
-                            ref={(ref) => { this.refContent = ref; }}
-                            style={{
-                                display: 'inline-block',
-                                verticalAlign: 'top',
-                                height: '100%',
-                                width: 'calc(100% - 50px)',
-                                margin: 0,
-                                padding: '4px',
-                                boxSizing: 'border-box',
-                                overflow: 'scroll',
-                                whiteSpace: 'pre',
-                                fontSize: '12px',
+                            onClick = { this.onClick }
+                        >
+                            {this.renderLabels()}
+                        </span>
+                        <span
+                            id              = { id }
+                            ref             = { ref => this.refContent = ref }
+                            contentEditable = { true }
+                            style = {{
+                                display       : 'inline-block',
+                                boxSizing     : 'border-box',
+                                verticalAlign : 'top',
+                                height        : '100%',
+                                width         : '',
+                                flex          : 1,
+                                margin        : 0,
+                                padding       : '5px',
+                                overflowX     : 'hidden',
+                                overflowY     : 'auto',
+                                wordWrap      : 'break-word',
+                                whiteSpace    : 'pre-line',
+                                color         : '#D4D4D4',
+                                outline       : 'none',
                                 ...style.contentBox
                             }}
-                            contentEditable
-                            onInput={this.update}
-                            onKeyPress={this.onKeyPress}
-                            onKeyDown={this.onKeyDown}
-                            onPaste={this.onPaste}
-                            onBlur={this.onBlur}
+                            dangerouslySetInnerHTML = { this.createMarkup(markupText) }
+                            onKeyPress     = { this.onKeyPress }
+                            onKeyDown      = { this.onKeyDown }
+                            onClick        = { this.onClick }
+                            onBlur         = { this.onBlur }
+                            onScroll       = { this.onScroll }
+                            onPaste        = { this.onPaste }
+                            autoComplete   = 'off'
+                            autoCorrect    = 'off'
+                            autoCapitalize = 'off'
+                            spellCheck     = { false }
                         />
                     </div>
                 </div>
             </div>
         );
     }
-
-    onClick(event) {
-        const { id } = this.props;
-        const targetId = event.target.id;
-        if (targetId === id + '-outer-box' || targetId === id + '-container') {
-            this.refContent.focus();
-        }
+    renderErrorMessage(){
+        const
+            locale = this.props.locale || defaultLocale,
+            error  = this.props.error || this.state.error,
+            style  = this.style;
+        if(!error) return void(0);
+        return (
+            <p
+                style = {{
+                    color          : 'red',
+                    fontSize       : '12px',
+                    position       : 'absolute',
+                    width          : 'calc(100% - 60px)',
+                    height         : '60px',
+                    boxSizing      : 'border-box',
+                    margin         : 0,
+                    padding        : 0,
+                    paddingRight   : '10px',
+                    overflowWrap   : 'break-word',
+                    display        : 'flex',
+                    flexDirection  : 'column',
+                    justifyContent : 'center',
+                    ...style.errorMessage
+                }}
+            >
+                { format(locale.format, error) }
+            </p>
+        );
     }
-
-    onBlur(event) {
-        if (!this.props.onBlur) return;
-        this.props.onBlur({
-            jsObject: this.state.jsObject,
-            json: this.state.json,
-            text: this.state.plainText,
-            error: this.state.error
+    renderLabels(){
+        const
+            colors    = this.colors,
+            style     = this.style,
+            error     = this.props.error || this.state.error,
+            errorLine = error ? error.line : -1,
+            lines     = this.state.lines ? this.state.lines : 1;
+        let
+            labels    = new Array(lines);
+        for(var i = 0; i < lines - 1; i++) labels[i] = i + 1;
+        return labels.map( number => {
+            const color = number !== errorLine ? colors.default : 'red';
+            return (
+                <div
+                    key   = {number}
+                    style = {{
+                        ...style.labels,
+                        color : color
+                    }}
+                >
+                    {number}
+                </div>
+            );
         });
     }
-
-    onScroll(event) {
-        if (!this.refLabels) return;
-        this.refLabels.scrollTop = this.refContent.scrollTop;
+    createMarkup(markupText){
+        if(markupText===undefined) return { __html: '' };
+        return { __html: '' + markupText };
     }
-
-    onKeyPress(event) {
-        if (event.key === 'Enter') {
-            this.setUpdateTime();
+    newSpan(i,token,depth){
+        let
+            colors   = this.colors,
+            type     = token.type,
+            string   = token.string;
+        let color = '';
+        switch(type){
+            case 'string' : case 'number' : case 'primitive' : case 'error' :     color = colors[token.type]; break;
+            case 'key'    : if(string===' ') color = colors.keys_whiteSpace; else color = colors.keys;        break;
+            case 'symbol' : if(string===':') color = colors.colon;           else color = colors.default;     break;
+            default : color = colors.default; break;
         }
+        if(string.length!==string.replace(/</g,'').replace(/>/g,'').length) string = '<xmp style=display:inline;>' + string + '</xmp>';
+        return (
+            '<span' +
+            ' type="'         + type     + '"' +
+            ' value="'        + string   + '"' +
+            ' depth="'        + depth    + '"' +
+            ' style="color:'  + color    + '"' +
+            '>'                   + string   +
+            '</span>'
+        );
     }
-
-    onKeyDown(event) {
-        if (event.key === 'Tab') {
-            this.stopEvent(event);
-            const cursorPosition = this.getCursorPosition();
-            this.insert('  ');
-            this.setCursorPosition(cursorPosition + 2);
-            this.setUpdateTime();
+    getCursorPosition(countBR){
+        /**
+         * Need to deprecate countBR
+         * It is used to differenciate between good markup render, and aux render when error found
+         * Adjustments based on coundBR account for usage of <br> instead of <span> for linebreaks to determine acurate cursor position
+         * Find a way to consolidate render styles
+         */
+        const isChildOf = node => {
+            while (node !== null) {
+                if (node === this.refContent) return true;
+                node = node.parentNode;
+            }
+            return false;
+        };
+        let
+            selection      = window.getSelection(),
+            charCount      = -1,
+            linebreakCount = 0,
+            node;
+        if (selection.focusNode && isChildOf(selection.focusNode)) {
+            node = selection.focusNode;
+            charCount = selection.focusOffset;
+            while (node) {
+                if (node === this.refContent) break;
+                if (node.previousSibling) {
+                    node = node.previousSibling;
+                    if(countBR) if(node.nodeName==='BR') linebreakCount++;
+                    charCount += node.textContent.length;
+                } else {
+                    node = node.parentNode;
+                    if (node === null) break;
+                }
+            }
         }
+        return charCount + linebreakCount;
     }
-
-    onPaste(event) {
-        this.stopEvent(event);
-        let paste = (event.clipboardData || window.clipboardData).getData('text');
-        let cursorPosition = this.getCursorPosition();
-        this.insert(paste);
-        this.setCursorPosition(cursorPosition + paste.length);
-        this.setUpdateTime();
+    setCursorPosition(nextPosition) {
+        if([false,null,undefined].indexOf(nextPosition)>-1) return;
+        const createRange = (node, chars, range) => {
+            if (!range) {
+                range = document.createRange();
+                range.selectNode(node);
+                range.setStart(node, 0);
+            }
+            if (chars.count === 0) {
+                range.setEnd(node, chars.count);
+            } else if (node && chars.count >0) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node.textContent.length < chars.count) chars.count -= node.textContent.length;
+                    else { range.setEnd(node, chars.count); chars.count = 0; }
+                } else
+                    for (var lp = 0; lp < node.childNodes.length; lp++) {
+                        range = createRange(node.childNodes[lp], chars, range);
+                        if (chars.count === 0) break;
+                    }
+            }
+            return range;
+        };
+        const setPosition = chars => {
+            if (chars < 0) return;
+            let
+                selection = window.getSelection(),
+                range     = createRange(this.refContent, { count: chars });
+            if (!range) return;
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        };
+        if(nextPosition > 0) setPosition(nextPosition);
+        else this.refContent.focus();
     }
-
-    stopEvent(event) {
+    update(cursorOffset=0,updateCursorPosition=true){
+        const
+            container = this.refContent,
+            data      = this.tokenize(container);
+        if('onChange' in this.props) this.props.onChange({
+            plainText  : data.indented,
+            markupText : data.markup,
+            json       : data.json,
+            jsObject   : data.jsObject,
+            lines      : data.lines,
+            error      : data.error
+        });
+        let cursorPosition = this.getCursorPosition(data.error) + cursorOffset;
+        this.setState({
+            plainText  : data.indented,
+            markupText : data.markup,
+            json       : data.json,
+            jsObject   : data.jsObject,
+            lines      : data.lines,
+            error      : data.error
+        });
+        this.updateTime = false;
+        if(updateCursorPosition) this.setCursorPosition(cursorPosition);
+    }
+    scheduledUpdate(){
+        if('onKeyPressUpdate' in this.props) if(this.props.onKeyPressUpdate===false) return;
+        const { updateTime } = this;
+        if(updateTime===false) return;
+        if(updateTime > new Date().getTime()) return;
+        this.update();
+    }
+    setUpdateTime(){
+        if('onKeyPressUpdate' in this.props) if(this.props.onKeyPressUpdate===false) return;
+        this.updateTime = new Date().getTime() + this.waitAfterKeyPress;
+    }
+    stopEvent(event){
+        if(!event) return;
         event.preventDefault();
         event.stopPropagation();
     }
-
-    setUpdateTime() {
-        this.updateTime = true;
+    onKeyPress(event){
+        const ctrlOrMetaIsPressed = event.ctrlKey || event.metaKey;
+        if(this.props.viewOnly && !ctrlOrMetaIsPressed) this.stopEvent(event);
+        if (!ctrlOrMetaIsPressed) this.setUpdateTime();
     }
+    onKeyDown(event){
+        const viewOnly = !!this.props.viewOnly;
+        const ctrlOrMetaIsPressed = event.ctrlKey || event.metaKey;
 
-    insert(text) {
-        let paste = text || '';
-        document.execCommand('insertText', false, paste);
+        switch(event.key){
+            case 'Tab':
+                this.stopEvent(event);
+                if (viewOnly) break;
+                document.execCommand("insertText", false, "  ");
+                this.setUpdateTime();
+                break;
+            case 'Backspace' : case 'Delete'     :
+                if (viewOnly) this.stopEvent(event);
+                this.setUpdateTime();
+                break;
+            case 'ArrowLeft' : case 'ArrowRight' :
+            case 'ArrowUp'   : case 'ArrowDown'  :
+                this.setUpdateTime();
+                break;
+            case 'a'         : case 'c'          :
+                if (viewOnly && !ctrlOrMetaIsPressed) this.stopEvent(event);
+                break;
+            default :
+                if (viewOnly) this.stopEvent(event);
+                break;
+        }
     }
+    onPaste(event){
+        if (this.props.viewOnly) {
+            this.stopEvent(event);
+        } else {
+            event.preventDefault();
+            var text = event.clipboardData.getData('text/plain');
+            document.execCommand('insertText', false, text);
+        }
+        this.update();
+    }
+    onClick(){
+        if('viewOnly' in this.props) if(this.props.viewOnly) return;
+    }
+    onBlur(){
+        if('viewOnly' in this.props) if(this.props.viewOnly) return;
+        const
+            container = this.refContent,
+            data      = this.tokenize(container);
+        if('onBlur' in this.props) this.props.onBlur({
+            plainText  : data.indented,
+            markupText : data.markup,
+            json       : data.json,
+            jsObject   : data.jsObject,
+            lines      : data.lines,
+            error      : data.error
+        });
+    }
+    onScroll(event){
+        this.refLabels.scrollTop = event.target.scrollTop;
+    }
+    componentDidUpdate(){
+        this.updateInternalProps();
+        this.showPlaceholder();
+    }
+    componentDidMount(){
+        this.showPlaceholder();
+    }
+    componentWillUnmount(){
+        if(this.timer) clearInterval(this.timer);
+    }
+    showPlaceholder(){
 
-    update(event) {
-        const plainText = this.refContent.innerText;
-        let jsObject = undefined;
-        let json = '';
-        let error = false;
+        const placeholderDoesNotExist = !('placeholder' in this.props);
+        if(placeholderDoesNotExist) return;
 
-        try {
-            json = format(plainText);
-            jsObject = JSON.parse(plainText);
-        } catch (e) {
-            error = e;
+        const { placeholder } = this.props;
+
+        const placeholderHasEmptyValues = [undefined,null].indexOf(placeholder) > -1;
+        if(placeholderHasEmptyValues) return;
+
+        const { prevPlaceholder, jsObject } = this.state;
+        const { resetConfiguration } = this;
+
+        const placeholderDataType = getType(placeholder);
+        const unexpectedDataType = ['object','array'].indexOf(placeholderDataType) === -1;
+        if(unexpectedDataType) err.throwError('showPlaceholder','placeholder','either an object or an array');
+
+        const samePlaceholderValues = identical(placeholder,prevPlaceholder);
+
+        // Component will always re-render when new placeholder value is any different from previous placeholder value.
+        let componentShouldUpdate = !samePlaceholderValues;
+
+        if(!componentShouldUpdate){
+            if(resetConfiguration){
+                /**
+                 * If 'reset' property is set true or is truthy,
+                 * any difference between placeholder and current value
+                 * should trigger component re-render
+                 */
+                if(jsObject!==undefined) componentShouldUpdate = !identical(placeholder,jsObject);
+            }
         }
 
+        if(!componentShouldUpdate) return;
+
+        const data = this.tokenize(placeholder);
         this.setState({
-            plainText,
-            jsObject,
-            json,
-            error,
-            markupText: this.createMarkup(plainText, error)
+            prevPlaceholder : placeholder,
+            plainText       : data.indentation,
+            markupText      : data.markup,
+            lines           : data.lines,
+            error           : data.error
         });
 
-        if (this.props.onChange) {
-            this.props.onChange({
-                jsObject,
-                json,
-                text: plainText,
-                error
-            });
-        }
-
-        if (this.updateTime && this.props.onKeyPressUpdate) {
-            clearTimeout(this.updateTime);
-            this.updateTime = setTimeout(() => {
-                this.setState({ markupText: this.createMarkup(plainText, error) });
-            }, this.waitAfterKeyPress);
-        }
     }
-
-    scheduledUpdate() {
-        if (this.updateTime) {
-            this.updateTime = false;
-            this.update();
-        }
-    }
-
-    getCursorPosition() {
-        let selection = window.getSelection();
-        return selection.focusOffset;
-    }
-
-    setCursorPosition(pos) {
-        const setSelectionRange = (element, start, end) => {
-            if (element.setSelectionRange) {
-                element.focus();
-                element.setSelectionRange(start, end);
-            } else if (element.createTextRange) {
-                let range = element.createTextRange();
-                range.collapse(true);
-                range.moveEnd('character', end);
-                range.moveStart('character', start);
-                range.select();
-            }
-        };
-
-        setSelectionRange(this.refContent, pos, pos);
-    }
-
-    renderLabels(lines, ref) {
-        if (!lines) return;
-
-        const labels = lines.map((line, index) => (
-            <div
-                key={index}
-                style={{
-                    display: 'block',
-                    height: '1em',
-                    textAlign: 'center',
-                    width: '100%',
-                    margin: 0,
-                    boxSizing: 'border-box'
-                }}
-            >
-                {index + 1}
-            </div>
-        ));
-
-        return <div ref={ref}>{labels}</div>;
-    }
-
-    showPlaceholder(plainText) {
-        const { locale } = this.props;
-        const { prevPlaceholder } = this.state;
-        if (plainText === '' && prevPlaceholder === '') {
-            this.setState({ prevPlaceholder: locale?.placeHolder });
-        } else if (plainText !== '' && prevPlaceholder !== '') {
-            this.setState({ prevPlaceholder: '' });
-        }
-    }
-
     tokenize(something){
         if(typeof something !== 'object') return console.error('tokenize() expects object type properties only. Got \'' + typeof something + '\' type instead.');
         const locale = this.props.locale || defaultLocale;
@@ -1729,20 +1842,6 @@ class JSONInput extends Component {
                 lines    : lines
             };
         }
-    }
-
-    createMarkup(plainText, error) {
-        let markupText = '';
-        if (error) {
-            const splitText = plainText.split('\n');
-            const errorIndex = Math.max(error.index - 1, 0);
-            const errorLine = splitText[Math.min(error.line - 1, splitText.length - 1)];
-            splitText.splice(error.line - 1, 1, `<span style="color:${this.colors.error}">${errorLine}</span>`);
-            markupText = splitText.join('\n');
-        } else {
-            markupText = plainText;
-        }
-        return markupText;
     }
 }
 
