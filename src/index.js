@@ -503,9 +503,7 @@ class JSONInput extends Component {
             lines      : data.lines,
             error      : data.error
         });
-        // let cursorPosition = this.getCursorPosition(data.error) + cursorOffset;
-        console.log(this.getCursorPosition(data.error));
-        console.log(cursorOffset);
+        let cursorPosition = this.getCursorPosition(data.error) + cursorOffset;
         this.setState({
             plainText  : data.indented,
             markupText : data.markup,
@@ -515,7 +513,7 @@ class JSONInput extends Component {
             error      : data.error
         });
         this.updateTime = false;
-        // if(updateCursorPosition) this.setCursorPosition(cursorPosition);
+        if(updateCursorPosition) this.setCursorPosition(cursorPosition);
     }
     scheduledUpdate(){
         if('onKeyPressUpdate' in this.props) if(this.props.onKeyPressUpdate===false) return;
