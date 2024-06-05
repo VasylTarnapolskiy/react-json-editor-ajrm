@@ -48,6 +48,45 @@ class JSONInput extends Component {
         }
     }
 
+    renderErrorMessage(){
+        const
+            error = this.props.error || this.state.error,
+            style = this.style;
+        if(!error) return;
+        return (
+            <div
+                name  = 'error-message-box'
+                id    = {this.props.id && this.props.id + '-error-message-box'}
+                style = {{
+                    height    : '30px',
+                    width     : '100%',
+                    position  : 'absolute',
+                    bottom    : 0,
+                    display   : 'block',
+                    fontSize  : '12px',
+                    color     : this.colors.error,
+                    lineHeight: '30px',
+                    overflow  : 'hidden',
+                    ...style.errorMessage
+                }}
+            >
+                {
+                    error.token
+                        ? error.error.replace(' at position',' at position ' + error.token.index + ', character ') + '.'
+                        : error.error
+                }
+            </div>
+        );
+    }
+
+    newSpan(key, content, color) {
+        return (
+            <span key={key} style={{ color }}>
+            {content}
+        </span>
+        );
+    }
+
     updateInternalProps() {
         let colors = {}, style = {}, theme = themes.dark_vscode_tribute;
         if ('theme' in this.props) {
