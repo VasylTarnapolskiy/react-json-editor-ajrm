@@ -137,7 +137,7 @@ class JSONInput extends Component {
                     confirmGood ?
                         <div
                             style = {{
-                                opacity                  : hasError ? 0 : 1,
+                                opacity                  : 0,
                                 height                   : '30px',
                                 width                    : '30px',
                                 position                 : 'absolute',
@@ -184,9 +184,9 @@ class JSONInput extends Component {
                         name  = 'warning-box'
                         id    = {id && id + '-warning-box'}
                         style = {{
-                            display                  : 'block',
+                            display                  : 'none',
                             overflow                 : 'hidden',
-                            height                   : hasError ? '60px' : '0px',
+                            height                   : '0px',
                             width                    : '100%',
                             margin                   : 0,
                             backgroundColor          : colors.background_warning,
